@@ -1,4 +1,5 @@
 (function () {
+  // Ensure toolbar is not duplicated
   if (document.getElementById("flowlab-plus-toolbar")) return;
 
   const FONT_OPTIONS = {
@@ -22,6 +23,7 @@
     localStorage.setItem("flp-theme", theme);
   };
 
+  // Create and add the toolbar
   const toolbar = document.createElement("div");
   toolbar.id = "flowlab-plus-toolbar";
   toolbar.innerHTML = `
@@ -89,6 +91,7 @@
     });
   };
 
+  // Set up event listeners for buttons
   document.getElementById("flp-tools-btn").onclick = () => toggleDropdown("flp-dropdown-tools");
   document.getElementById("flp-themes-btn").onclick = () => toggleDropdown("flp-dropdown-themes");
   document.getElementById("flp-resources-btn").onclick = () => {
@@ -107,49 +110,14 @@
     }
   };
 
-  document.getElementById("submenu-simkeys-toggle").onclick = () => {
-    const el = document.getElementById("submenu-simkeys-content");
-    el.style.display = el.style.display === "block" ? "none" : "block";
+  // Chatbot functionality
+  document.getElementById("flp-chatbot-btn").onclick = () => {
+    const chatbotWindow = document.getElementById("flp-chatbot-window");
+    chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
+    const saved = localStorage.getItem("flp-chat-history");
+    document.getElementById("chat-output").innerHTML = saved || "";
+    if (!saved) appendChatMessage("What do you need help with today?", "bot");
   };
-
-  document.getElementById("submenu-overlay-toggle").onclick = () => {
-    const el = document.getElementById("submenu-overlay-content");
-    el.style.display = el.style.display === "block" ? "none" : "block";
-  };
-
-  document.getElementById("add-custom-button").onclick = () => {
-    const label = document.getElementById("custom-label").value.trim();
-    const key = document.getElementById("custom-action").value.trim();
-    if (!label || !key) return alert("Both fields are required!");
-    const button = document.createElement("button");
-    button.textContent = label;
-    button.onclick = () => {
-      const keyEvent = new KeyboardEvent("keydown", { key, bubbles: true });
-      document.dispatchEvent(keyEvent);
-    };
-    document.getElementById("custom-buttons").appendChild(button);
-    document.getElementById("custom-label").value = "";
-    document.getElementById("custom-action").value = "";
-  };
-
-  document.getElementById("upload-image").onclick = () => alert("Image upload logic coming soon...");
-
-  const chatbotWindow = document.createElement("div");
-  chatbotWindow.id = "flp-chatbot-window";
-  chatbotWindow.style.display = "none";
-  chatbotWindow.innerHTML = `
-    <div id="chatbot-header">
-      <span>Flowlab+ Chatbot</span>
-      <button id="clear-chat">Clear Chat</button>
-      <button id="close-chatbot">X</button>
-    </div>
-    <div id="chatbot-body">
-      <div id="chat-output"></div>
-      <input type="text" id="chat-input" placeholder="Ask me anything about Flowlab..." />
-      <button id="send-message">Send</button>
-    </div>
-  `;
-  document.body.appendChild(chatbotWindow);
 
   const appendChatMessage = (text, sender = "user") => {
     const div = document.createElement("div");
@@ -157,6 +125,15 @@
     div.textContent = text;
     document.getElementById("chat-output").appendChild(div);
     document.getElementById("chat-output").scrollTop = 99999;
+  };
+
+  // Handle sending messages
+  document.getElementById("send-message").onclick = () => {
+    const input = document.getElementById("chat-input").value.trim();
+    if (!input) return;
+    appendChatMessage("You: " + input);
+    document.getElementById("chat-input").value = "";
+    getChatbotResponse(input);
   };
 
   async function getChatbotResponse(input) {
@@ -180,42 +157,7 @@
     }
   }
 
-  // Open/close chatbot
-  document.getElementById("flp-chatbot-btn").onclick = () => {
-    chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
-    const saved = localStorage.getItem("flp-chat-history");
-    document.getElementById("chat-output").innerHTML = saved || "";
-    if (!saved) appendChatMessage("What do you need help with today?", "bot");
-  };
-
-  document.getElementById("close-chatbot").onclick = () => chatbotWindow.style.display = "none";
-
-  // Clear chat history
-  document.getElementById("clear-chat").onclick = () => {
-    localStorage.removeItem("flp-chat-history");
-    document.getElementById("chat-output").innerHTML = "";
-    appendChatMessage("What do you need help with today?", "bot");
-  };
-
-  document.getElementById("send-message").onclick = () => {
-    const input = document.getElementById("chat-input").value.trim();
-    if (!input) return;
-    appendChatMessage("You: " + input);
-    document.getElementById("chat-input").value = "";
-    getChatbotResponse(input);
-  };
-
-  document.getElementById("theme-toggle").onclick = () => {
-    const mode = document.documentElement.getAttribute("data-theme") || "dark";
-    applyTheme(mode === "dark" ? "light" : "dark");
-  };
-
-  document.getElementById("font-select").onchange = (e) => loadFont(e.target.value);
-  document.getElementById("import-font").onclick = () => {
-    const url = document.getElementById("font-url").value.trim();
-    if (url) loadFont("CustomFont", url);
-  };
-
+  // Initial theme and font settings
   applyTheme(localStorage.getItem("flp-theme") || "dark");
   const font = localStorage.getItem("flp-font");
   loadFont(font || "Rubik", localStorage.getItem("flp-font-url"));
