@@ -1,92 +1,176 @@
-:root {
-  --flp-font: "Rubik", sans-serif;
-}
+  const toggleDropdown = (idToToggle) => {
+    document.querySelectorAll(".flp-dropdown").forEach((el) => {
+      el.style.display = el.id === idToToggle && el.style.display === "none" ? "block" : "none";
+      if (el.id !== idToToggle) el.style.display = "none";
+    });
+  };
 
-[data-theme="dark"] {
-  --flp-bg: #1e1e1e;
-  --flp-text: #f1f1f1;
-  --flp-border: #333;
-  --flp-hover: #007acc;
-  --flp-dropdown: #2b2b2b;
-}
+  const pressKey = (key) => {
+    const keyCode = key.toUpperCase().charCodeAt(0);
+    const down = new KeyboardEvent("keydown", { key, code: key.toUpperCase(), keyCode, which: keyCode, bubbles: true });
+    const up = new KeyboardEvent("keyup", { key, code: key.toUpperCase(), keyCode, which: keyCode, bubbles: true });
+    document.activeElement.dispatchEvent(down);
+    setTimeout(() => document.activeElement.dispatchEvent(up), 50);
+  };
 
-[data-theme="light"] {
-  --flp-bg: #f5f5f5;
-  --flp-text: #111;
-  --flp-border: #ccc;
-  --flp-hover: #007acc;
-  --flp-dropdown: #ffffff;
-}
+  const saveButtons = () => {
+    const buttons = Array.from(document.querySelectorAll("#custom-buttons button")).map(btn => ({
+      label: btn.textContent,
+      key: btn.dataset.key
+    }));
+    localStorage.setItem("flowlabPlusButtons", JSON.stringify(buttons));
+  };
 
-body, html {
-  font-family: var(--flp-font);
-}
+  const addCustomButton = (label, key, save = true) => {
+    const newBtn = document.createElement("button");
+    newBtn.textContent = label;
+    newBtn.dataset.key = key;
+    newBtn.className = "flp-action-button";
+    newBtn.onclick = () => pressKey(key);
+    document.getElementById("custom-buttons").appendChild(newBtn);
+    if (save) saveButtons();
+  };
 
-#flowlab-plus-toolbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 9999;
-  background: var(--flp-bg);
-  color: var(--flp-text);
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--flp-border);
-  display: flex;
-  align-items: center;
-  font-family: var(--flp-font);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
+  const createOverlay = (dataUrl) => {
+    const overlay = document.createElement("img");
+    overlay.src = dataUrl;
+    overlay.className = "flp-image-overlay";
+    overlay.draggable = false;
+    document.body.appendChild(overlay);
 
-.flp-nav {
-  display: flex;
-  gap: 10px;
-  flex: 1;
-}
+    let isDragging = false, startX, startY;
+    overlay.style.position = "fixed";
+    overlay.style.top = "100px";
+    overlay.style.left = "100px";
+    overlay.style.width = "200px";
 
-.flp-menu-btn {
-  background: transparent;
-  border: none;
-  padding: 6px 12px;
-  color: var(--flp-text);
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
+    overlay.addEventListener("mousedown", (e) => {
+      if (overlay.classList.contains("locked")) return;
+      isDragging = true;
+      startX = e.clientX - overlay.offsetLeft;
+      startY = e.clientY - overlay.offsetTop;
+    });
 
-.flp-menu-btn:hover {
-  outline: 2px solid var(--flp-hover);
-}
+    document.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        overlay.style.left = `${e.clientX - startX}px`;
+        overlay.style.top = `${e.clientY - startY}px`;
+      }
+    });
 
-#flp-logo {
-  margin-left: auto;
-  font-weight: bold;
-  font-size: 16px;
-  padding-right: 10px;
-  color: var(--flp-hover);
-}
+    document.addEventListener("mouseup", () => isDragging = false);
 
-.flp-dropdown {
-  position: fixed;
-  top: 40px;
-  left: 10px;
-  background: var(--flp-dropdown);
-  color: var(--flp-text);
-  border: 1px solid var(--flp-border);
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  min-width: 220px;
-  z-index: 9999;
-  display: none;
-  padding: 10px;
-}
+    const resizeHandle = document.createElement("div");
+    resizeHandle.className = "flp-resize-handle";
+    overlay.appendChild(resizeHandle);
 
-.flp-dropdown-content input,
-.flp-dropdown-content select,
-.flp-dropdown-content button {
-  margin-top: 6px;
-  width: 100%;
-  padding: 6px;
-  font-family: var(--flp-font);
-  border
+    resizeHandle.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      const startWidth = overlay.offsetWidth;
+      const startHeight = overlay.offsetHeight;
+      const startX = e.clientX;
+      const startY = e.clientY;
+
+      const onMouseMove = (moveEvent) => {
+        const newWidth = startWidth + (moveEvent.clientX - startX);
+        const newHeight = startHeight + (moveEvent.clientY - startY);
+        overlay.style.width = `${Math.max(50, newWidth)}px`;
+        overlay.style.height = "auto";
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      };
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
+
+    const opacitySlider = document.getElementById("overlay-opacity");
+    opacitySlider.oninput = () => overlay.style.opacity = opacitySlider.value;
+
+    const toggleBtn = document.getElementById("toggle-lock");
+    toggleBtn.onclick = () => {
+      if (overlay.classList.contains("locked")) {
+        overlay.classList.remove("locked");
+        toggleBtn.textContent = "🔓 Unlock";
+      } else {
+        overlay.classList.add("locked");
+        toggleBtn.textContent = "🔒 Locked";
+      }
+    };
+  };
+
+  document.getElementById("add-custom-button").onclick = () => {
+    const label = document.getElementById("custom-label").value.trim();
+    const key = document.getElementById("custom-action").value.trim();
+    if (!label || !key) return alert("Both fields are required!");
+    addCustomButton(label, key);
+    document.getElementById("custom-label").value = "";
+    document.getElementById("custom-action").value = "";
+  };
+
+  document.getElementById("font-select").onchange = (e) => loadFont(e.target.value);
+  document.getElementById("import-font").onclick = () => {
+    const url = document.getElementById("font-url").value.trim();
+    if (!url) return alert("Enter a valid Google Fonts URL.");
+    loadFont("CustomFont", url);
+  };
+  document.getElementById("theme-toggle").onclick = () => {
+    const current = document.documentElement.getAttribute("data-theme") || "dark";
+    applyTheme(current === "dark" ? "light" : "dark");
+  };
+
+  document.getElementById("flp-tools-btn").onclick = () => toggleDropdown("flp-dropdown-tools");
+  document.getElementById("flp-themes-btn").onclick = () => toggleDropdown("flp-dropdown-themes");
+  document.getElementById("flp-resources-btn").onclick = () => toggleDropdown("flp-dropdown-resources");
+
+  document.getElementById("submenu-simkeys-toggle").onclick = () => {
+    const box = document.getElementById("submenu-simkeys-content");
+    box.style.display = box.style.display === "block" ? "none" : "block";
+  };
+
+  document.getElementById("flp-logo").onclick = () => {
+    const modal = document.getElementById("flp-credits-modal");
+    modal.style.display = "flex";
+    modal.onclick = () => (modal.style.display = "none");
+  };
+
+  document.getElementById("upload-image").onclick = () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        createOverlay(event.target.result);
+        localStorage.setItem("flp-last-overlay", event.target.result);
+      };
+      reader.readAsDataURL(file);
+    };
+    fileInput.click();
+  };
+
+  const saved = localStorage.getItem("flowlabPlusButtons");
+  if (saved) {
+    try {
+      JSON.parse(saved).forEach(({ label, key }) => addCustomButton(label, key, false));
+    } catch (e) {
+      console.warn("⚠️ Failed to load saved buttons:", e);
+    }
+  }
+
+  const theme = localStorage.getItem("flp-theme") || "dark";
+  applyTheme(theme);
+
+  const savedFont = localStorage.getItem("flp-font");
+  const savedFontUrl = localStorage.getItem("flp-font-url");
+  if (savedFont) loadFont(savedFont, savedFontUrl || null);
+  else loadFont("Rubik");
+
+  const savedOverlay = localStorage.getItem("flp-last-overlay");
+  if (savedOverlay) createOverlay(savedOverlay);
+})();
