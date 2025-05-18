@@ -1,11 +1,8 @@
 (function () {
-  // Debugging log to confirm the script is running
   console.log("✅ Flowlab+ content script running!");
 
-  // Prevent duplicate injections
   if (document.getElementById("flowlab-plus-panel")) return;
 
-  // Create the UI panel
   const panel = document.createElement('div');
   panel.id = 'flowlab-plus-panel';
   panel.innerHTML = `
@@ -21,14 +18,40 @@
   `;
   document.body.appendChild(panel);
 
-  // Toggle popup
   const toggle = document.getElementById('flowlab-plus-toggle');
   const popup = document.getElementById('flowlab-plus-popup');
   toggle.onclick = () => {
     popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
   };
 
-  // Add custom button logic
+  const pressKey = (key) => {
+    const keyCode = key.toUpperCase().charCodeAt(0);
+
+    const down = new KeyboardEvent("keydown", {
+      key,
+      code: key.toUpperCase(),
+      keyCode,
+      which: keyCode,
+      bubbles: true,
+    });
+
+    const up = new KeyboardEvent("keyup", {
+      key,
+      code: key.toUpperCase(),
+      keyCode,
+      which: keyCode,
+      bubbles: true,
+    });
+
+    document.activeElement.dispatchEvent(down);
+    console.log(`🔘 keydown: ${key}`);
+
+    setTimeout(() => {
+      document.activeElement.dispatchEvent(up);
+      console.log(`🔘 keyup: ${key}`);
+    }, 50);
+  };
+
   document.getElementById("add-custom-button").onclick = () => {
     const label = document.getElementById("custom-label").value.trim();
     const key = document.getElementById("custom-action").value.trim();
@@ -41,17 +64,7 @@
     newBtn.style.display = "block";
     newBtn.style.padding = "6px 10px";
     newBtn.style.marginBottom = "5px";
-    newBtn.onclick = () => {
-      const evt = new KeyboardEvent("keydown", {
-        key: key,
-        code: key.toUpperCase(),
-        keyCode: key.toUpperCase().charCodeAt(0),
-        which: key.toUpperCase().charCodeAt(0),
-        bubbles: true,
-      });
-      document.activeElement.dispatchEvent(evt);
-      console.log(`🔘 Simulated keypress: ${key}`);
-    };
+    newBtn.onclick = () => pressKey(key);
 
     document.getElementById("custom-buttons").appendChild(newBtn);
   };
