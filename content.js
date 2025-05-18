@@ -1,4 +1,3 @@
-// == Flowlab+ Full Toolbar with Hugging Face Chatbot Integration ==
 (function () {
   if (document.getElementById("flowlab-plus-toolbar")) return;
 
@@ -141,6 +140,7 @@
   chatbotWindow.innerHTML = `
     <div id="chatbot-header">
       <span>Flowlab+ Chatbot</span>
+      <button id="clear-chat">Clear Chat</button>
       <button id="close-chatbot">X</button>
     </div>
     <div id="chatbot-body">
@@ -178,20 +178,22 @@
     }
   }
 
-  setTimeout(() => {
-    const chatBtn = document.getElementById("flp-chatbot-btn");
-    const chatWindow = document.getElementById("flp-chatbot-window");
-    if (chatBtn && chatWindow) {
-      chatBtn.onclick = () => {
-        chatWindow.style.display = chatWindow.style.display === "none" ? "block" : "none";
-        const saved = localStorage.getItem("flp-chat-history");
-        document.getElementById("chat-output").innerHTML = saved || "";
-        if (!saved) appendChatMessage("What do you need help with today?", "bot");
-      };
-    }
-  }, 500);
+  // Open/close chatbot
+  document.getElementById("flp-chatbot-btn").onclick = () => {
+    chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
+    const saved = localStorage.getItem("flp-chat-history");
+    document.getElementById("chat-output").innerHTML = saved || "";
+    if (!saved) appendChatMessage("What do you need help with today?", "bot");
+  };
 
   document.getElementById("close-chatbot").onclick = () => chatbotWindow.style.display = "none";
+
+  // Clear chat history
+  document.getElementById("clear-chat").onclick = () => {
+    localStorage.removeItem("flp-chat-history");
+    document.getElementById("chat-output").innerHTML = "";
+    appendChatMessage("What do you need help with today?", "bot");
+  };
 
   document.getElementById("send-message").onclick = () => {
     const input = document.getElementById("chat-input").value.trim();
