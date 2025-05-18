@@ -2,11 +2,12 @@
   if (document.getElementById("flowlab-plus-toolbar")) return;
 
   let activeOverlay = null;
+  let rotation = 0;
 
   const FONT_OPTIONS = {
     Rubik: "Rubik, sans-serif",
     Inter: "Inter, sans-serif",
-    Segoe: "Segoe UI, sans-serif"
+    Segoe: "Segoe UI", sans-serif
   };
 
   const loadFont = (font, url) => {
@@ -43,7 +44,7 @@
         <input id="custom-label" placeholder="Button Label" />
         <input id="custom-action" placeholder="Key to press (e.g. a)" />
         <button id="add-custom-button">Add Button</button>
-        <div id="custom-buttons" style="margin-top:10px;"></div>
+        <div id="custom-buttons"></div>
       </div>
 
       <div class="flp-submenu-content" id="submenu-overlay-content">
@@ -51,217 +52,6 @@
         <button id="upload-image">Upload Image</button>
         <label>🔍 Size</label>
         <input type="range" id="overlay-size" min="50" max="800" value="200">
+        <button id="reset-size">Reset Size</button>
         <label>🟡 Opacity</label>
-        <input type="range" id="overlay-opacity" min="0" max="1" step="0.01" value="1">
-        <button id="toggle-lock">🔓 Unlock</button>
-      </div>
-    </div>
-
-    <div id="flp-dropdown-themes" class="flp-dropdown">
-      <div class="flp-dropdown-content">
-        <h4>Theme</h4>
-        <button id="theme-toggle">Toggle Light/Dark</button>
-        <h4 style="margin-top:10px;">Font</h4>
-        <select id="font-select">
-          <option value="Rubik">Rubik</option>
-          <option value="Inter">Inter</option>
-          <option value="Segoe">Segoe</option>
-        </select>
-        <input id="font-url" placeholder="Custom Google Font URL" />
-        <button id="import-font">Import Font</button>
-      </div>
-    </div>
-
-    <div id="flp-dropdown-resources" class="flp-dropdown">
-      <div class="flp-dropdown-content">
-        <h4>Resources</h4>
-        <div id="resource-gallery"></div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(toolbar);
-
-  const toggleDropdown = (id) => {
-    document.querySelectorAll(".flp-dropdown").forEach(el => {
-      el.style.display = el.id === id && el.style.display === "none" ? "block" : "none";
-      if (el.id !== id) el.style.display = "none";
-    });
-  };
-
-  const createOverlay = (dataUrl) => {
-    const img = document.createElement("img");
-    img.src = dataUrl;
-    img.className = "flp-image-overlay";
-    img.style.width = "200px";
-    img.style.position = "fixed";
-    img.style.top = "100px";
-    img.style.left = "100px";
-    document.body.appendChild(img);
-    activeOverlay = img;
-
-    let isDragging = false;
-    let startX, startY;
-
-    img.addEventListener("mousedown", (e) => {
-      if (img.classList.contains("locked")) return;
-      isDragging = true;
-      startX = e.clientX - img.offsetLeft;
-      startY = e.clientY - img.offsetTop;
-    });
-
-    document.addEventListener("mousemove", (e) => {
-      if (isDragging) {
-        img.style.left = `${e.clientX - startX}px`;
-        img.style.top = `${e.clientY - startY}px`;
-      }
-    });
-
-    document.addEventListener("mouseup", () => isDragging = false);
-
-    const resize = document.createElement("div");
-    resize.className = "flp-resize-handle";
-    img.appendChild(resize);
-
-    resize.addEventListener("mousedown", (e) => {
-      e.stopPropagation();
-      const startWidth = img.offsetWidth;
-      const startX = e.clientX;
-
-      const onMove = (move) => {
-        const newWidth = startWidth + (move.clientX - startX);
-        img.style.width = `${Math.max(50, newWidth)}px`;
-      };
-
-      const onUp = () => {
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
-      };
-
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
-    });
-
-    const rotateBtn = document.createElement("button");
-    rotateBtn.textContent = "⟳";
-    rotateBtn.className = "flp-overlay-btn";
-    let rot = 0;
-    rotateBtn.onclick = () => {
-      rot = (rot + 15) % 360;
-      img.style.transform = `rotate(${rot}deg)`;
-    };
-
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "✖";
-    delBtn.className = "flp-overlay-btn";
-    delBtn.onclick = () => {
-      img.remove();
-      rotateBtn.remove();
-      delBtn.remove();
-    };
-
-    document.body.appendChild(rotateBtn);
-    document.body.appendChild(delBtn);
-
-    const updateBtnPosition = () => {
-      const rect = img.getBoundingClientRect();
-      rotateBtn.style.position = delBtn.style.position = "fixed";
-      rotateBtn.style.left = `${rect.left}px`;
-      rotateBtn.style.top = `${rect.top - 30}px`;
-      delBtn.style.left = `${rect.left + 30}px`;
-      delBtn.style.top = `${rect.top - 30}px`;
-    };
-
-    updateBtnPosition();
-    new ResizeObserver(updateBtnPosition).observe(img);
-  };
-
-  const loadGallery = () => {
-    const gallery = document.getElementById("resource-gallery");
-    gallery.innerHTML = "";
-    const resources = JSON.parse(localStorage.getItem("flp-resources") || "[]");
-
-    resources.forEach((url, index) => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "flp-resource-card";
-
-      const img = document.createElement("img");
-      img.src = url;
-
-      const useBtn = document.createElement("button");
-      useBtn.textContent = "Use";
-      useBtn.onclick = () => createOverlay(url);
-
-      wrapper.appendChild(img);
-      wrapper.appendChild(useBtn);
-      gallery.appendChild(wrapper);
-    });
-  };
-
-  document.getElementById("upload-image").onclick = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const data = ev.target.result;
-        createOverlay(data);
-        const saved = JSON.parse(localStorage.getItem("flp-resources") || "[]");
-        if (!saved.includes(data)) {
-          saved.push(data);
-          localStorage.setItem("flp-resources", JSON.stringify(saved));
-        }
-      };
-      reader.readAsDataURL(file);
-    };
-    input.click();
-  };
-
-  document.getElementById("overlay-opacity").oninput = (e) => {
-    if (activeOverlay) activeOverlay.style.opacity = e.target.value;
-  };
-
-  document.getElementById("overlay-size").oninput = (e) => {
-    if (activeOverlay) activeOverlay.style.width = `${e.target.value}px`;
-  };
-
-  document.getElementById("toggle-lock").onclick = () => {
-    if (!activeOverlay) return;
-    activeOverlay.classList.toggle("locked");
-    document.getElementById("toggle-lock").textContent =
-      activeOverlay.classList.contains("locked") ? "🔒 Locked" : "🔓 Unlock";
-  };
-
-  // UI Toggle
-  document.getElementById("flp-tools-btn").onclick = () => toggleDropdown("flp-dropdown-tools");
-  document.getElementById("flp-themes-btn").onclick = () => toggleDropdown("flp-dropdown-themes");
-  document.getElementById("flp-resources-btn").onclick = () => {
-    toggleDropdown("flp-dropdown-resources");
-    loadGallery();
-  };
-  document.getElementById("submenu-simkeys-toggle").onclick = () => {
-    const el = document.getElementById("submenu-simkeys-content");
-    el.style.display = el.style.display === "block" ? "none" : "block";
-  };
-  document.getElementById("submenu-overlay-toggle").onclick = () => {
-    const el = document.getElementById("submenu-overlay-content");
-    el.style.display = el.style.display === "block" ? "none" : "block";
-  };
-
-  // Themes/fonts
-  document.getElementById("theme-toggle").onclick = () => {
-    const mode = document.documentElement.getAttribute("data-theme") || "dark";
-    applyTheme(mode === "dark" ? "light" : "dark");
-  };
-  document.getElementById("font-select").onchange = (e) => loadFont(e.target.value);
-  document.getElementById("import-font").onclick = () => {
-    const url = document.getElementById("font-url").value.trim();
-    if (url) loadFont("CustomFont", url);
-  };
-
-  // Init
-  applyTheme(localStorage.getItem("flp-theme") || "dark");
-  const font = localStorage.getItem("flp-font");
-  loadFont(font || "Rubik", localStorage.getItem("flp-font-url"));
-})();
+        <input type="range" id="overlay-opacity" min="0" max="1" step="0.01" value
