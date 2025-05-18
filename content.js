@@ -3,6 +3,7 @@
 
   let activeOverlay = null;
   let activeRotation = 0;
+
   const FONT_OPTIONS = {
     Rubik: "Rubik, sans-serif",
     Inter: "Inter, sans-serif",
