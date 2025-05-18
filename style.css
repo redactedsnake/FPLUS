@@ -19,76 +19,7 @@ body {
   font-family: var(--flp-font);
 }
 
-/* === Toolbar === */
-#flowlab-plus-toolbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 10000;
-  background: var(--flp-bg);
-  color: var(--flp-fg);
-  display: flex;
-  padding: 6px 12px;
-  gap: 10px;
-  border-bottom: 1px solid var(--flp-border);
-}
-
-.flp-nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.flp-menu-btn {
-  background: none;
-  color: var(--flp-fg);
-  border: 1px solid var(--flp-border);
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-}
-
-.flp-menu-btn:hover {
-  outline: 2px solid var(--flp-accent);
-}
-
-.flp-dropdown {
-  position: absolute;
-  top: 40px;
-  background: var(--flp-bg);
-  color: var(--flp-fg);
-  border: 1px solid var(--flp-border);
-  padding: 10px;
-  border-radius: 8px;
-  z-index: 10001;
-}
-
-.flp-submenu-item {
-  cursor: pointer;
-  padding: 6px 0;
-  font-weight: bold;
-}
-
-.flp-submenu-content {
-  padding-left: 10px;
-  margin-bottom: 10px;
-}
-
-.flp-dropdown-content select,
-.flp-dropdown-content input,
-.flp-dropdown-content button {
-  display: block;
-  margin: 6px 0;
-  padding: 4px;
-  width: 100%;
-  border-radius: 4px;
-  border: 1px solid var(--flp-border);
-  background: var(--flp-bg);
-  color: var(--flp-fg);
-}
-
-/* === Buttons (All buttons styled like 'Send' button) === */
+/* === Buttons === */
 button {
   padding: 8px 16px;
   background: var(--flp-accent);
@@ -100,101 +31,11 @@ button {
 }
 
 button:hover {
-  background: #0077cc; /* Slightly darker accent */
+  background: #0077cc;
   opacity: 0.9;
 }
 
 button:disabled {
   background: #ccc;
   cursor: not-allowed;
-}
-
-/* === Chatbot === */
-#flp-chatbot-window {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 300px;
-  height: 400px;
-  background: var(--flp-bg);
-  color: var(--flp-fg);
-  border: 1px solid var(--flp-border);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  z-index: 10010;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-#chatbot-header {
-  padding: 10px;
-  background: var(--flp-accent);
-  color: white;
-  font-weight: bold;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-#chatbot-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  gap: 8px;
-}
-
-#chat-output {
-  flex: 1;
-  overflow-y: auto;
-  border: 1px solid var(--flp-border);
-  border-radius: 6px;
-  padding: 5px;
-  background: #121212;
-}
-
-.chat-msg {
-  margin: 4px 0;
-}
-
-.chat-msg.bot {
-  color: #88ccff;
-}
-
-.chat-msg.user {
-  color: #dddddd;
-}
-
-#chat-input {
-  padding: 6px;
-  border: 1px solid var(--flp-border);
-  border-radius: 4px;
-  background: var(--flp-bg);
-  color: var(--flp-fg);
-}
-
-#send-message {
-  margin-top: 4px;
-  background: var(--flp-accent);
-}
-
-#clear-chat {
-  margin-left: 10px;
-  background: #ff4444;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-#clear-chat:hover {
-  background: #cc3333;
-}
-
-/* Resource thumbnails */
-#resource-gallery img {
-  max-width: 60px;
-  margin: 4px;
-  border-radius: 4px;
-  border: 1px solid var(--flp-border);
 }
