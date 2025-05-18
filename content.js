@@ -1,4 +1,4 @@
-// == Flowlab+ Full Toolbar with Chatbot, Tools, Themes, and Resources ==
+// == Flowlab+ Full Toolbar with Hugging Face Chatbot Integration ==
 (function () {
   if (document.getElementById("flowlab-plus-toolbar")) return;
 
@@ -159,18 +159,24 @@
     document.getElementById("chat-output").scrollTop = 99999;
   };
 
-  const getChatbotResponse = (input) => {
-    input = input.toLowerCase();
-    let response = "I'm not sure, but check https://forum.flowlab.io";
-    if (input.includes("help"))
-      response = "What do you need help with today? Try https://flowlab.io/tutorials";
-    else if (input.includes("new game"))
-      response = "To make a new game, go to your Dashboard and click 'Create New Game'.";
-    else if (input.includes("behaviors"))
-      response = "Check out Flowlab's Behavior Examples: https://flowlab.io/examples";
-    appendChatMessage(response, "bot");
-    localStorage.setItem("flp-chat-history", document.getElementById("chat-output").innerHTML);
-  };
+  async function getChatbotResponse(input) {
+    appendChatMessage("Flowlab+ Chatbot: Thinking...", "bot");
+    try {
+      const response = await fetch("https://api-inference.huggingface.co/models/google/flan-t5-small", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inputs: `Answer this question about Flowlab.io: ${input}` })
+      });
+      const data = await response.json();
+      const output = data?.[0]?.generated_text || "Sorry, I couldn't find an answer.";
+      const last = document.querySelector("#chat-output .chat-msg.bot:last-child");
+      if (last && last.textContent.includes("Thinking...")) last.remove();
+      appendChatMessage("Flowlab+ Chatbot: " + output, "bot");
+      localStorage.setItem("flp-chat-history", document.getElementById("chat-output").innerHTML);
+    } catch (e) {
+      appendChatMessage("Flowlab+ Chatbot: Something went wrong. Try again later.", "bot");
+    }
+  }
 
   setTimeout(() => {
     const chatBtn = document.getElementById("flp-chatbot-btn");
