@@ -74,11 +74,12 @@ body, html {
   background: var(--flp-dropdown);
   color: var(--flp-text);
   border: 1px solid var(--flp-border);
-  padding: 12px;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  min-width: 250px;
+  min-width: 220px;
   z-index: 9999;
+  display: none;
+  padding: 10px;
 }
 
 .flp-dropdown-content input,
@@ -88,25 +89,4 @@ body, html {
   width: 100%;
   padding: 6px;
   font-family: var(--flp-font);
-  border-radius: 6px;
-  border: 1px solid var(--flp-border);
-  background: var(--flp-bg);
-  color: var(--flp-text);
-}
-
-.flp-action-button {
-  margin-top: 5px;
-  width: 100%;
-  background: var(--flp-hover);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.flp-action-button:hover {
-  background: #005a9e;
-}
+  border
