@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Flowlab+",
+  "version": "1.0",
+  "description": "Enhance Flowlab with custom tools and features.",
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": ["https://flowlab.io/editor/*"],
+      "js": ["content.js"],
+      "css": ["style.css"]
+    }
+  ],
+  "icons": {
+    "128": "icon.png"
+  }
+}
