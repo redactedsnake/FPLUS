@@ -6,7 +6,7 @@
   "permissions": [],
   "content_scripts": [
     {
-      "matches": ["https://flowlab.io/editor/*"],
+      "matches": ["https://flowlab.io/edit/*"],
       "js": ["content.js"],
       "css": ["style.css"]
     }
