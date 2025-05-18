@@ -70,3 +70,171 @@
           <option value="Rubik">Rubik</option>
           <option value="Inter">Inter</option>
           <option value="Segoe">Segoe</option>
+        </select>
+        <input id="font-url" placeholder="Custom Google Font URL" />
+        <button id="import-font">Import Font</button>
+      </div>
+    </div>
+
+    <div id="flp-dropdown-resources" class="flp-dropdown">
+      <div class="flp-dropdown-content">
+        <h4>Resources</h4>
+        <div id="resource-gallery"></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(toolbar);
+
+  const toggleDropdown = (id) => {
+    document.querySelectorAll(".flp-dropdown").forEach(el => {
+      el.style.display = el.id === id && el.style.display === "none" ? "block" : "none";
+      if (el.id !== id) el.style.display = "none";
+    });
+  };
+
+  const createOverlay = (dataUrl) => {
+    const img = document.createElement("img");
+    img.src = dataUrl;
+    img.className = "flp-image-overlay";
+    img.style.width = "200px";
+    img.style.opacity = "1";
+    img.style.transform = "rotate(0deg)";
+    img.style.position = "fixed";
+    img.style.top = "100px";
+    img.style.left = "100px";
+    document.body.appendChild(img);
+    activeOverlay = img;
+    activeRotation = 0;
+
+    let isDragging = false, startX, startY;
+
+    img.addEventListener("mousedown", (e) => {
+      if (img.classList.contains("locked")) return;
+      isDragging = true;
+      startX = e.clientX - img.offsetLeft;
+      startY = e.clientY - img.offsetTop;
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        img.style.left = `${e.clientX - startX}px`;
+        img.style.top = `${e.clientY - startY}px`;
+      }
+    });
+
+    document.addEventListener("mouseup", () => isDragging = false);
+
+    const resize = document.createElement("div");
+    resize.className = "flp-resize-handle";
+    img.appendChild(resize);
+
+    resize.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      const startWidth = img.offsetWidth;
+      const startX = e.clientX;
+
+      const onMove = (move) => {
+        const newWidth = startWidth + (move.clientX - startX);
+        img.style.width = `${Math.max(50, newWidth)}px`;
+      };
+
+      const onUp = () => {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      };
+
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    });
+  };
+
+  const loadGallery = () => {
+    const gallery = document.getElementById("resource-gallery");
+    gallery.innerHTML = "";
+    const resources = JSON.parse(localStorage.getItem("flp-resources") || "[]");
+
+    resources.forEach((url) => {
+      const thumb = document.createElement("img");
+      thumb.src = url;
+      thumb.className = "flp-thumb";
+      thumb.onclick = () => createOverlay(url);
+      gallery.appendChild(thumb);
+    });
+  };
+
+  // Overlay controls
+  document.getElementById("upload-image").onclick = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const data = ev.target.result;
+        createOverlay(data);
+        const saved = JSON.parse(localStorage.getItem("flp-resources") || "[]");
+        if (!saved.includes(data)) {
+          saved.push(data);
+          localStorage.setItem("flp-resources", JSON.stringify(saved));
+        }
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    };
+    input.click();
+  };
+
+  document.getElementById("overlay-opacity").oninput = (e) => {
+    if (activeOverlay) activeOverlay.style.opacity = e.target.value;
+  };
+
+  document.getElementById("overlay-size").oninput = (e) => {
+    if (activeOverlay) activeOverlay.style.width = `${e.target.value}px`;
+  };
+
+  document.getElementById("toggle-lock").onclick = () => {
+    if (!activeOverlay) return;
+    activeOverlay.classList.toggle("locked");
+    document.getElementById("toggle-lock").textContent =
+      activeOverlay.classList.contains("locked") ? "🔒 Locked" : "🔓 Unlock";
+  };
+
+  // Reset buttons
+  document.getElementById("reset-size").onclick = () => {
+    if (activeOverlay) activeOverlay.style.width = "200px";
+  };
+  document.getElementById("reset-opacity").onclick = () => {
+    if (activeOverlay) activeOverlay.style.opacity = "1";
+  };
+  document.getElementById("reset-rotation").onclick = () => {
+    if (activeOverlay) {
+      activeRotation = 0;
+      activeOverlay.style.transform = "rotate(0deg)";
+    }
+  };
+
+  // Dropdowns
+  document.getElementById("flp-tools-btn").onclick = () => toggleDropdown("flp-dropdown-tools");
+  document.getElementById("flp-themes-btn").onclick = () => toggleDropdown("flp-dropdown-themes");
+  document.getElementById("flp-resources-btn").onclick = () => {
+    toggleDropdown("flp-dropdown-resources");
+    loadGallery();
+  };
+  document.getElementById("submenu-overlay-toggle").onclick = () => {
+    const el = document.getElementById("submenu-overlay-content");
+    el.style.display = el.style.display === "block" ? "none" : "block";
+  };
+
+  document.getElementById("theme-toggle").onclick = () => {
+    const mode = document.documentElement.getAttribute("data-theme") || "dark";
+    applyTheme(mode === "dark" ? "light" : "dark");
+  };
+  document.getElementById("font-select").onchange = (e) => loadFont(e.target.value);
+  document.getElementById("import-font").onclick = () => {
+    const url = document.getElementById("font-url").value.trim();
+    if (url) loadFont("CustomFont", url);
+  };
+
+  applyTheme(localStorage.getItem("flp-theme") || "dark");
+  const font = localStorage.getItem("flp-font");
+  loadFont(font || "Rubik", localStorage.getItem("flp-font-url"));
+})();
