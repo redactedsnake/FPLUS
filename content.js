@@ -1,4 +1,7 @@
 (function () {
+  // Debugging log to confirm the script is running
+  console.log("✅ Flowlab+ content script running!");
+
   // Prevent duplicate injections
   if (document.getElementById("flowlab-plus-panel")) return;
 
