@@ -2,24 +2,29 @@
   position: fixed;
   top: 10px;
   right: 10px;
-  z-index: 9999;
+  z-index: 10000;
   font-family: sans-serif;
 }
 
 #flowlab-plus-toggle {
-  background: #4caf50;
+  background: #282c34;
   color: white;
   border: none;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
 #flowlab-plus-popup {
-  margin-top: 5px;
+  margin-top: 8px;
   background: white;
-  padding: 10px;
+  color: black;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  width: 220px;
+  border-radius: 8px;
+  padding: 12px;
+  display: none;
+  width: 200px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
