@@ -92,7 +92,21 @@
 
   document.getElementById("flp-tools-btn").onclick = () => toggleDropdown("flp-dropdown-tools");
   document.getElementById("flp-themes-btn").onclick = () => toggleDropdown("flp-dropdown-themes");
-  document.getElementById("flp-resources-btn").onclick = () => toggleDropdown("flp-dropdown-resources");
+  document.getElementById("flp-resources-btn").onclick = () => {
+    toggleDropdown("flp-dropdown-resources");
+    const gallery = document.getElementById("resource-gallery");
+    if (gallery) {
+      const resources = JSON.parse(localStorage.getItem("flp-resources") || "[]");
+      gallery.innerHTML = "";
+      resources.forEach(url => {
+        const img = document.createElement("img");
+        img.src = url;
+        img.style.maxWidth = "64px";
+        img.style.margin = "4px";
+        gallery.appendChild(img);
+      });
+    }
+  };
 
   document.getElementById("submenu-simkeys-toggle").onclick = () => {
     const el = document.getElementById("submenu-simkeys-content");
@@ -104,7 +118,6 @@
     el.style.display = el.style.display === "block" ? "none" : "block";
   };
 
-  // Simulate Keys
   document.getElementById("add-custom-button").onclick = () => {
     const label = document.getElementById("custom-label").value.trim();
     const key = document.getElementById("custom-action").value.trim();
@@ -120,10 +133,8 @@
     document.getElementById("custom-action").value = "";
   };
 
-  // Overlay logic placeholder
   document.getElementById("upload-image").onclick = () => alert("Image upload logic coming soon...");
 
-  // Chatbot
   const chatbotWindow = document.createElement("div");
   chatbotWindow.id = "flp-chatbot-window";
   chatbotWindow.style.display = "none";
@@ -161,12 +172,18 @@
     localStorage.setItem("flp-chat-history", document.getElementById("chat-output").innerHTML);
   };
 
-  document.getElementById("flp-chatbot-btn").onclick = () => {
-    chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
-    const saved = localStorage.getItem("flp-chat-history");
-    document.getElementById("chat-output").innerHTML = saved || "";
-    if (!saved) appendChatMessage("What do you need help with today?", "bot");
-  };
+  setTimeout(() => {
+    const chatBtn = document.getElementById("flp-chatbot-btn");
+    const chatWindow = document.getElementById("flp-chatbot-window");
+    if (chatBtn && chatWindow) {
+      chatBtn.onclick = () => {
+        chatWindow.style.display = chatWindow.style.display === "none" ? "block" : "none";
+        const saved = localStorage.getItem("flp-chat-history");
+        document.getElementById("chat-output").innerHTML = saved || "";
+        if (!saved) appendChatMessage("What do you need help with today?", "bot");
+      };
+    }
+  }, 500);
 
   document.getElementById("close-chatbot").onclick = () => chatbotWindow.style.display = "none";
 
@@ -178,7 +195,6 @@
     getChatbotResponse(input);
   };
 
-  // Theme and font
   document.getElementById("theme-toggle").onclick = () => {
     const mode = document.documentElement.getAttribute("data-theme") || "dark";
     applyTheme(mode === "dark" ? "light" : "dark");
