@@ -19,6 +19,7 @@ body {
   font-family: var(--flp-font);
 }
 
+/* === Toolbar === */
 #flowlab-plus-toolbar {
   position: fixed;
   top: 0;
@@ -87,6 +88,27 @@ body {
   color: var(--flp-fg);
 }
 
+/* === Buttons (All buttons styled like 'Send' button) === */
+button {
+  padding: 8px 16px;
+  background: var(--flp-accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, opacity 0.3s ease;
+}
+
+button:hover {
+  background: #0077cc; /* Slightly darker accent */
+  opacity: 0.9;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
 /* === Chatbot === */
 #flp-chatbot-window {
   position: fixed;
@@ -153,16 +175,20 @@ body {
 
 #send-message {
   margin-top: 4px;
-  padding: 6px;
   background: var(--flp-accent);
+}
+
+#clear-chat {
+  margin-left: 10px;
+  background: #ff4444;
   color: white;
-  border: none;
+  padding: 4px 8px;
   border-radius: 6px;
   cursor: pointer;
 }
 
-#send-message:hover {
-  opacity: 0.9;
+#clear-chat:hover {
+  background: #cc3333;
 }
 
 /* Resource thumbnails */
