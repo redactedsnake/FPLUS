@@ -4,10 +4,10 @@
   if (document.getElementById("flowlab-plus-toolbar")) return;
 
   const FONT_OPTIONS = {
-    Rubik: "Rubik, sans-serif",
-    Inter: "Inter, sans-serif",
-    Segoe: "Segoe UI", sans-serif
-  };
+  Rubik: "Rubik, sans-serif",
+  Inter: "Inter, sans-serif",
+  Segoe: "Segoe UI, sans-serif"
+};
 
   const loadFont = (fontName, customURL = null) => {
     const link = document.createElement("link");
