@@ -165,10 +165,12 @@
       const response = await fetch("https://api-inference.huggingface.co/models/google/flan-t5-small", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inputs: `Answer this question about Flowlab.io: ${input}` })
+        body: JSON.stringify({
+          inputs: `You are an assistant for Flowlab.io, an online game creation platform. Answer the following question specifically related to Flowlab. If you don't know the answer, suggest Flowlab forums, tutorials, or examples. Question: "${input}"`
+        })
       });
       const data = await response.json();
-      const output = data?.[0]?.generated_text || "Sorry, I couldn't find an answer.";
+      const output = data?.[0]?.generated_text || `Sorry, I couldn't find an answer specific to Flowlab. Please check the [Flowlab Forums](https://forum.flowlab.io/) or the [Flowlab Tutorials](https://flowlab.io/tutorials).`;
       const last = document.querySelector("#chat-output .chat-msg.bot:last-child");
       if (last && last.textContent.includes("Thinking...")) last.remove();
       appendChatMessage("Flowlab+ Chatbot: " + output, "bot");
