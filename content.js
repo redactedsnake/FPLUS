@@ -1,6 +1,8 @@
+// == Flowlab+ Enhanced content.js with Chatbot and all tools ==
 (function () {
   if (document.getElementById("flowlab-plus-toolbar")) return;
 
+  // ---- Utilities ----
   const FONT_OPTIONS = {
     Rubik: "Rubik, sans-serif",
     Inter: "Inter, sans-serif",
@@ -22,26 +24,21 @@
     localStorage.setItem("flp-theme", theme);
   };
 
+  // ---- Toolbar ----
   const toolbar = document.createElement("div");
   toolbar.id = "flowlab-plus-toolbar";
   toolbar.innerHTML = `
     <div class="flp-nav">
+      <button class="flp-menu-btn" id="flp-tools-btn">Tools</button>
+      <button class="flp-menu-btn" id="flp-themes-btn">Themes</button>
+      <button class="flp-menu-btn" id="flp-resources-btn">Resources</button>
       <button class="flp-menu-btn" id="flp-chatbot-btn">AI Chatbot</button>
       <div id="flp-logo">Flowlab+</div>
     </div>
   `;
   document.body.appendChild(toolbar);
 
-  const toggleChatbot = () => {
-    const chatbotWindow = document.getElementById("flp-chatbot-window");
-    if (chatbotWindow.style.display === "none" || !chatbotWindow.style.display) {
-      chatbotWindow.style.display = "block";
-      document.getElementById("chat-input").focus();
-    } else {
-      chatbotWindow.style.display = "none";
-    }
-  };
-
+  // ---- Chatbot Window ----
   const chatbotWindow = document.createElement("div");
   chatbotWindow.id = "flp-chatbot-window";
   chatbotWindow.style.display = "none";
@@ -58,48 +55,59 @@
   `;
   document.body.appendChild(chatbotWindow);
 
-  // Handle closing the chatbot
-  document.getElementById("close-chatbot").onclick = () => toggleChatbot();
+  // ---- Chatbot Functions ----
+  const appendChatMessage = (text, sender = "user") => {
+    const div = document.createElement("div");
+    div.className = `chat-msg ${sender}`;
+    div.textContent = text;
+    document.getElementById("chat-output").appendChild(div);
+    document.getElementById("chat-output").scrollTop = 99999;
+  };
 
-  // Handle user message input
+  const getChatbotResponse = (input) => {
+    input = input.toLowerCase();
+    let response =
+      "I'm not sure, but you can find help in the Flowlab Forums: https://forum.flowlab.io";
+    if (input.includes("help"))
+      response = "What do you need help with today? Try checking https://flowlab.io/tutorials";
+    else if (input.includes("new game"))
+      response = "To make a new game, go to your Dashboard and click 'Create New Game'.";
+    else if (input.includes("behaviors"))
+      response = "Check out Flowlab's Behavior Examples: https://flowlab.io/examples";
+
+    appendChatMessage(response, "bot");
+    saveChat();
+  };
+
+  const saveChat = () => {
+    localStorage.setItem("flp-chat-history", document.getElementById("chat-output").innerHTML);
+  };
+
+  const restoreChat = () => {
+    const saved = localStorage.getItem("flp-chat-history");
+    if (saved) document.getElementById("chat-output").innerHTML = saved;
+    else appendChatMessage("What do you need help with today?", "bot");
+  };
+
+  // ---- Chatbot Events ----
+  document.getElementById("flp-chatbot-btn").onclick = () => {
+    chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
+    restoreChat();
+  };
+
+  document.getElementById("close-chatbot").onclick = () => {
+    chatbotWindow.style.display = "none";
+  };
+
   document.getElementById("send-message").onclick = () => {
     const input = document.getElementById("chat-input").value.trim();
-    if (input) {
-      appendChatMessage("You: " + input);
-      getChatbotResponse(input);
-      document.getElementById("chat-input").value = "";
-    }
+    if (!input) return;
+    appendChatMessage("You: " + input);
+    document.getElementById("chat-input").value = "";
+    getChatbotResponse(input);
   };
 
-  // Add the user's chat message to the chat window
-  const appendChatMessage = (message) => {
-    const output = document.getElementById("chat-output");
-    const messageDiv = document.createElement("div");
-    messageDiv.textContent = message;
-    output.appendChild(messageDiv);
-    output.scrollTop = output.scrollHeight;
-  };
-
-  // Generate the chatbot's response
-  const getChatbotResponse = (input) => {
-    let response = "I'm sorry, I don't understand that. Please check the [Flowlab Forums](https://forum.flowlab.io/).";
-
-    // Predefined answers based on common queries
-    if (input.toLowerCase().includes("help")) {
-      response = "What do you need help with today? You can also check the [Flowlab Tutorials](https://flowlab.io/tutorials/).";
-    } else if (input.toLowerCase().includes("new game")) {
-      response = "To create a new game, go to the 'My Games' tab and click 'Create New Game'. Here's a tutorial: [Create Game Tutorial](https://flowlab.io/tutorials/creating-a-game).";
-    } else if (input.toLowerCase().includes("behaviors")) {
-      response = "Behaviors are the building blocks for creating logic in Flowlab. You can view examples and tutorials on behaviors here: [Behavior Examples](https://flowlab.io/examples/).";
-    }
-
-    appendChatMessage("Flowlab+ Chatbot: " + response);
-  };
-
-  // Open the chatbot window when clicking the button
-  document.getElementById("flp-chatbot-btn").onclick = () => toggleChatbot();
-
-  // Apply theme and font settings
+  // ---- Theme & Font ----
   applyTheme(localStorage.getItem("flp-theme") || "dark");
   const font = localStorage.getItem("flp-font");
   loadFont(font || "Rubik", localStorage.getItem("flp-font-url"));
