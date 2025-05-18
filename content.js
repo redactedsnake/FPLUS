@@ -42,7 +42,14 @@
     newBtn.style.padding = "6px 10px";
     newBtn.style.marginBottom = "5px";
     newBtn.onclick = () => {
-      document.dispatchEvent(new KeyboardEvent("keydown", { key }));
+      const evt = new KeyboardEvent("keydown", {
+        key: key,
+        code: key.toUpperCase(),
+        keyCode: key.toUpperCase().charCodeAt(0),
+        which: key.toUpperCase().charCodeAt(0),
+        bubbles: true,
+      });
+      document.activeElement.dispatchEvent(evt);
       console.log(`🔘 Simulated keypress: ${key}`);
     };
 
