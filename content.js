@@ -12,13 +12,11 @@
     <button id="flowlab-plus-toggle">⚙️ Flowlab+</button>
     <div id="flowlab-plus-popup">
       <h3>Flowlab+ Tools</h3>
-      <p>Coming soon: behavior search, backups, shortcuts...</p>
-      <div style="margin-top:10px;">
-        <strong>🎮 Simulate Gamepad:</strong><br>
-        <button id="btn-a">Press A</button>
-        <button id="btn-b">Press B</button>
-        <button id="btn-start">Start</button>
-      </div>
+      <p>Create custom buttons that simulate keypresses:</p>
+      <input id="custom-label" placeholder="Button Label" />
+      <input id="custom-action" placeholder="Key to press (e.g. a)" />
+      <button id="add-custom-button">Add Button</button>
+      <div id="custom-buttons" style="margin-top: 10px;"></div>
     </div>
   `;
   document.body.appendChild(panel);
@@ -30,16 +28,24 @@
     popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
   };
 
-  // Gamepad input simulation
-  document.getElementById("btn-a").onclick = () => {
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
-  };
+  // Add custom button logic
+  document.getElementById("add-custom-button").onclick = () => {
+    const label = document.getElementById("custom-label").value.trim();
+    const key = document.getElementById("custom-action").value.trim();
 
-  document.getElementById("btn-b").onclick = () => {
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "b" }));
-  };
+    if (!label || !key) return alert("Both fields are required!");
 
-  document.getElementById("btn-start").onclick = () => {
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    const newBtn = document.createElement("button");
+    newBtn.textContent = label;
+    newBtn.style.marginTop = "5px";
+    newBtn.style.display = "block";
+    newBtn.style.padding = "6px 10px";
+    newBtn.style.marginBottom = "5px";
+    newBtn.onclick = () => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key }));
+      console.log(`🔘 Simulated keypress: ${key}`);
+    };
+
+    document.getElementById("custom-buttons").appendChild(newBtn);
   };
 })();
