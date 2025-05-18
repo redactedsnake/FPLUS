@@ -1,30 +1,112 @@
-#flowlab-plus-panel {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 10000;
-  font-family: sans-serif;
+:root {
+  --flp-font: "Rubik", sans-serif;
 }
 
-#flowlab-plus-toggle {
-  background: #282c34;
+[data-theme="dark"] {
+  --flp-bg: #1e1e1e;
+  --flp-text: #f1f1f1;
+  --flp-border: #333;
+  --flp-hover: #007acc;
+  --flp-dropdown: #2b2b2b;
+}
+
+[data-theme="light"] {
+  --flp-bg: #f5f5f5;
+  --flp-text: #111;
+  --flp-border: #ccc;
+  --flp-hover: #007acc;
+  --flp-dropdown: #ffffff;
+}
+
+body, html {
+  font-family: var(--flp-font);
+}
+
+#flowlab-plus-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: var(--flp-bg);
+  color: var(--flp-text);
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--flp-border);
+  display: flex;
+  align-items: center;
+  font-family: var(--flp-font);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.flp-nav {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+.flp-menu-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  color: var(--flp-text);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.flp-menu-btn:hover {
+  outline: 2px solid var(--flp-hover);
+}
+
+#flp-logo {
+  margin-left: auto;
+  font-weight: bold;
+  font-size: 16px;
+  padding-right: 10px;
+  color: var(--flp-hover);
+}
+
+.flp-dropdown {
+  position: fixed;
+  top: 40px;
+  left: 10px;
+  background: var(--flp-dropdown);
+  color: var(--flp-text);
+  border: 1px solid var(--flp-border);
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  min-width: 250px;
+  z-index: 9999;
+}
+
+.flp-dropdown-content input,
+.flp-dropdown-content select,
+.flp-dropdown-content button {
+  margin-top: 6px;
+  width: 100%;
+  padding: 6px;
+  font-family: var(--flp-font);
+  border-radius: 6px;
+  border: 1px solid var(--flp-border);
+  background: var(--flp-bg);
+  color: var(--flp-text);
+}
+
+.flp-action-button {
+  margin-top: 5px;
+  width: 100%;
+  background: var(--flp-hover);
   color: white;
   border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
+  border-radius: 6px;
+  padding: 8px;
   font-weight: bold;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-#flowlab-plus-popup {
-  margin-top: 8px;
-  background: white;
-  color: black;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 12px;
-  display: none;
-  width: 200px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+.flp-action-button:hover {
+  background: #005a9e;
 }
