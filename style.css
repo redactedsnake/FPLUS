@@ -1,204 +1,267 @@
-:root {
-  --flp-font: 'Rubik', sans-serif;
-}
+(function () {
+  if (document.getElementById("flowlab-plus-toolbar")) return;
 
-[data-theme="dark"] {
-  --flp-bg: #1e1e1e;
-  --flp-text: #f1f1f1;
-  --flp-border: #333;
-  --flp-hover: #007acc;
-  --flp-dropdown: #2b2b2b;
-}
+  let activeOverlay = null;
 
-[data-theme="light"] {
-  --flp-bg: #f5f5f5;
-  --flp-text: #111;
-  --flp-border: #ccc;
-  --flp-hover: #007acc;
-  --flp-dropdown: #ffffff;
-}
+  const FONT_OPTIONS = {
+    Rubik: "Rubik, sans-serif",
+    Inter: "Inter, sans-serif",
+    Segoe: "Segoe UI, sans-serif"
+  };
 
-body, html {
-  font-family: var(--flp-font);
-}
+  const loadFont = (font, url) => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = url || `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, "+")}&display=swap`;
+    document.head.appendChild(link);
+    document.documentElement.style.setProperty("--flp-font", FONT_OPTIONS[font] || font);
+    localStorage.setItem("flp-font", font);
+    if (url) localStorage.setItem("flp-font-url", url);
+  };
 
-#flowlab-plus-toolbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 9999;
-  background: var(--flp-bg);
-  color: var(--flp-text);
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--flp-border);
-  display: flex;
-  align-items: center;
-  font-family: var(--flp-font);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
+  const applyTheme = (theme) => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("flp-theme", theme);
+  };
 
-.flp-nav {
-  display: flex;
-  gap: 10px;
-  flex: 1;
-}
+  const toolbar = document.createElement("div");
+  toolbar.id = "flowlab-plus-toolbar";
+  toolbar.innerHTML = `
+    <div class="flp-nav">
+      <button class="flp-menu-btn" id="flp-tools-btn">Tools</button>
+      <button class="flp-menu-btn" id="flp-themes-btn">Themes</button>
+      <button class="flp-menu-btn" id="flp-resources-btn">Resources</button>
+      <div id="flp-logo">Flowlab+</div>
+    </div>
 
-.flp-menu-btn {
-  background: transparent;
-  border: none;
-  padding: 6px 12px;
-  color: var(--flp-text);
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
+    <div id="flp-dropdown-tools" class="flp-dropdown">
+      <div class="flp-submenu-item" id="submenu-simkeys-toggle">Simulate Keys</div>
+      <div class="flp-submenu-item" id="submenu-overlay-toggle">Overlay Image</div>
 
-.flp-menu-btn:hover {
-  outline: 2px solid var(--flp-hover);
-}
+      <div class="flp-submenu-content" id="submenu-simkeys-content">
+        <h4>Add Key Simulation</h4>
+        <input id="custom-label" placeholder="Button Label" />
+        <input id="custom-action" placeholder="Key to press (e.g. a)" />
+        <button id="add-custom-button">Add Button</button>
+        <div id="custom-buttons" style="margin-top:10px;"></div>
+      </div>
 
-#flp-logo {
-  margin-left: auto;
-  font-weight: bold;
-  font-size: 16px;
-  padding-right: 10px;
-  color: var(--flp-hover);
-  cursor: pointer;
-}
+      <div class="flp-submenu-content" id="submenu-overlay-content">
+        <h4>Overlay Image</h4>
+        <button id="upload-image">Upload Image</button>
+        <label>🔍 Size</label>
+        <input type="range" id="overlay-size" min="50" max="800" value="200">
+        <label>🟡 Opacity</label>
+        <input type="range" id="overlay-opacity" min="0" max="1" step="0.01" value="1">
+        <button id="toggle-lock">🔓 Unlock</button>
+      </div>
+    </div>
 
-.flp-dropdown {
-  position: fixed;
-  top: 40px;
-  background: var(--flp-dropdown);
-  color: var(--flp-text);
-  border: 1px solid var(--flp-border);
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  min-width: 250px;
-  z-index: 9999;
-  padding: 10px;
-}
+    <div id="flp-dropdown-themes" class="flp-dropdown">
+      <div class="flp-dropdown-content">
+        <h4>Theme</h4>
+        <button id="theme-toggle">Toggle Light/Dark</button>
+        <h4 style="margin-top:10px;">Font</h4>
+        <select id="font-select">
+          <option value="Rubik">Rubik</option>
+          <option value="Inter">Inter</option>
+          <option value="Segoe">Segoe</option>
+        </select>
+        <input id="font-url" placeholder="Custom Google Font URL" />
+        <button id="import-font">Import Font</button>
+      </div>
+    </div>
 
-.flp-dropdown-content input,
-.flp-dropdown-content select,
-.flp-dropdown-content button {
-  margin-top: 6px;
-  width: 100%;
-  padding: 6px;
-  font-family: var(--flp-font);
-  border-radius: 6px;
-  border: 1px solid var(--flp-border);
-  background: var(--flp-bg);
-  color: var(--flp-text);
-}
+    <div id="flp-dropdown-resources" class="flp-dropdown">
+      <div class="flp-dropdown-content">
+        <h4>Resources</h4>
+        <div id="resource-gallery"></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(toolbar);
 
-.flp-submenu-item {
-  font-weight: bold;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  margin-bottom: 6px;
-  background: var(--flp-bg);
-}
+  const toggleDropdown = (id) => {
+    document.querySelectorAll(".flp-dropdown").forEach(el => {
+      el.style.display = el.id === id && el.style.display === "none" ? "block" : "none";
+      if (el.id !== id) el.style.display = "none";
+    });
+  };
 
-.flp-submenu-item:hover {
-  outline: 2px solid var(--flp-hover);
-}
+  const createOverlay = (dataUrl) => {
+    const img = document.createElement("img");
+    img.src = dataUrl;
+    img.className = "flp-image-overlay";
+    img.style.width = "200px";
+    img.style.position = "fixed";
+    img.style.top = "100px";
+    img.style.left = "100px";
+    document.body.appendChild(img);
+    activeOverlay = img;
 
-.flp-submenu-content {
-  display: none;
-  margin-top: 10px;
-  padding: 10px;
-  border: 1px solid var(--flp-border);
-  border-radius: 6px;
-  background: var(--flp-dropdown);
-}
+    let isDragging = false;
+    let startX, startY;
 
-.flp-action-button {
-  margin-top: 5px;
-  width: 100%;
-  background: var(--flp-hover);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
+    img.addEventListener("mousedown", (e) => {
+      if (img.classList.contains("locked")) return;
+      isDragging = true;
+      startX = e.clientX - img.offsetLeft;
+      startY = e.clientY - img.offsetTop;
+    });
 
-.flp-action-button:hover {
-  background: #005a9e;
-}
+    document.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        img.style.left = `${e.clientX - startX}px`;
+        img.style.top = `${e.clientY - startY}px`;
+      }
+    });
 
-.flp-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-}
+    document.addEventListener("mouseup", () => isDragging = false);
 
-.flp-modal-content {
-  background: var(--flp-dropdown);
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-  border: 1px solid var(--flp-border);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
+    const resize = document.createElement("div");
+    resize.className = "flp-resize-handle";
+    img.appendChild(resize);
 
-.flp-image-overlay {
-  z-index: 9998;
-  position: fixed;
-  top: 100px;
-  left: 100px;
-  max-width: 90%;
-  max-height: 80%;
-  cursor: move;
-  border: 2px dashed var(--flp-hover);
-  border-radius: 8px;
-}
+    resize.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      const startWidth = img.offsetWidth;
+      const startX = e.clientX;
 
-.flp-image-overlay.locked {
-  pointer-events: none;
-  border-style: solid;
-  opacity: 0.7;
-}
+      const onMove = (move) => {
+        const newWidth = startWidth + (move.clientX - startX);
+        img.style.width = `${Math.max(50, newWidth)}px`;
+      };
 
-.flp-resize-handle {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 12px;
-  height: 12px;
-  background: var(--flp-hover);
-  cursor: nwse-resize;
-  border-radius: 3px;
-}
+      const onUp = () => {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      };
 
-.flp-overlay-btn {
-  position: fixed;
-  background: var(--flp-hover);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 14px;
-  z-index: 9999;
-  cursor: pointer;
-}
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    });
 
-#resource-gallery img {
-  display: block;
-  width: 100%;
-  max-height: 100px;
-  object-fit: contain;
-  margin-bottom: 6px;
-  border: 1px solid var(--flp-border);
-  border-radius: 4px;
-}
+    const rotateBtn = document.createElement("button");
+    rotateBtn.textContent = "⟳";
+    rotateBtn.className = "flp-overlay-btn";
+    let rot = 0;
+    rotateBtn.onclick = () => {
+      rot = (rot + 15) % 360;
+      img.style.transform = `rotate(${rot}deg)`;
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "✖";
+    delBtn.className = "flp-overlay-btn";
+    delBtn.onclick = () => {
+      img.remove();
+      rotateBtn.remove();
+      delBtn.remove();
+    };
+
+    document.body.appendChild(rotateBtn);
+    document.body.appendChild(delBtn);
+
+    const updateBtnPosition = () => {
+      const rect = img.getBoundingClientRect();
+      rotateBtn.style.position = delBtn.style.position = "fixed";
+      rotateBtn.style.left = `${rect.left}px`;
+      rotateBtn.style.top = `${rect.top - 30}px`;
+      delBtn.style.left = `${rect.left + 30}px`;
+      delBtn.style.top = `${rect.top - 30}px`;
+    };
+
+    updateBtnPosition();
+    new ResizeObserver(updateBtnPosition).observe(img);
+  };
+
+  const loadGallery = () => {
+    const gallery = document.getElementById("resource-gallery");
+    gallery.innerHTML = "";
+    const resources = JSON.parse(localStorage.getItem("flp-resources") || "[]");
+
+    resources.forEach((url, index) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "flp-resource-card";
+
+      const img = document.createElement("img");
+      img.src = url;
+
+      const useBtn = document.createElement("button");
+      useBtn.textContent = "Use";
+      useBtn.onclick = () => createOverlay(url);
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(useBtn);
+      gallery.appendChild(wrapper);
+    });
+  };
+
+  document.getElementById("upload-image").onclick = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const data = ev.target.result;
+        createOverlay(data);
+        const saved = JSON.parse(localStorage.getItem("flp-resources") || "[]");
+        if (!saved.includes(data)) {
+          saved.push(data);
+          localStorage.setItem("flp-resources", JSON.stringify(saved));
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  };
+
+  document.getElementById("overlay-opacity").oninput = (e) => {
+    if (activeOverlay) activeOverlay.style.opacity = e.target.value;
+  };
+
+  document.getElementById("overlay-size").oninput = (e) => {
+    if (activeOverlay) activeOverlay.style.width = `${e.target.value}px`;
+  };
+
+  document.getElementById("toggle-lock").onclick = () => {
+    if (!activeOverlay) return;
+    activeOverlay.classList.toggle("locked");
+    document.getElementById("toggle-lock").textContent =
+      activeOverlay.classList.contains("locked") ? "🔒 Locked" : "🔓 Unlock";
+  };
+
+  // UI Toggle
+  document.getElementById("flp-tools-btn").onclick = () => toggleDropdown("flp-dropdown-tools");
+  document.getElementById("flp-themes-btn").onclick = () => toggleDropdown("flp-dropdown-themes");
+  document.getElementById("flp-resources-btn").onclick = () => {
+    toggleDropdown("flp-dropdown-resources");
+    loadGallery();
+  };
+  document.getElementById("submenu-simkeys-toggle").onclick = () => {
+    const el = document.getElementById("submenu-simkeys-content");
+    el.style.display = el.style.display === "block" ? "none" : "block";
+  };
+  document.getElementById("submenu-overlay-toggle").onclick = () => {
+    const el = document.getElementById("submenu-overlay-content");
+    el.style.display = el.style.display === "block" ? "none" : "block";
+  };
+
+  // Themes/fonts
+  document.getElementById("theme-toggle").onclick = () => {
+    const mode = document.documentElement.getAttribute("data-theme") || "dark";
+    applyTheme(mode === "dark" ? "light" : "dark");
+  };
+  document.getElementById("font-select").onchange = (e) => loadFont(e.target.value);
+  document.getElementById("import-font").onclick = () => {
+    const url = document.getElementById("font-url").value.trim();
+    if (url) loadFont("CustomFont", url);
+  };
+
+  // Init
+  applyTheme(localStorage.getItem("flp-theme") || "dark");
+  const font = localStorage.getItem("flp-font");
+  loadFont(font || "Rubik", localStorage.getItem("flp-font-url"));
+})();
