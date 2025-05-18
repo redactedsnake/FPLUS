@@ -1,4 +1,4 @@
-// == Flowlab+ Full Toolbar with Chatbot and Working Dropdowns ==
+// == Flowlab+ Full Toolbar with Chatbot, Tools, Themes, and Resources ==
 (function () {
   if (document.getElementById("flowlab-plus-toolbar")) return;
 
@@ -34,12 +34,32 @@
       <div id="flp-logo">Flowlab+</div>
     </div>
 
-    <div id="flp-dropdown-tools" class="flp-dropdown" style="display: none">
-      <div class="flp-submenu-item">Simulate Keys (coming soon)</div>
-      <div class="flp-submenu-item">Overlay Image (coming soon)</div>
+    <div id="flp-dropdown-tools" class="flp-dropdown">
+      <div class="flp-submenu-item" id="submenu-simkeys-toggle">Simulate Keys</div>
+      <div class="flp-submenu-content" id="submenu-simkeys-content" style="display: none">
+        <h4>Add Key Simulation</h4>
+        <input id="custom-label" placeholder="Button Label" />
+        <input id="custom-action" placeholder="Key to press (e.g. a)" />
+        <button id="add-custom-button">Add Button</button>
+        <div id="custom-buttons" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="flp-submenu-item" id="submenu-overlay-toggle">Overlay Image</div>
+      <div class="flp-submenu-content" id="submenu-overlay-content" style="display: none">
+        <h4>Overlay Image</h4>
+        <button id="upload-image">Upload Image</button>
+        <label>🔍 Size</label>
+        <input type="range" id="overlay-size" min="50" max="800" value="200">
+        <button id="reset-size">Reset Size</button>
+        <label>🟡 Opacity</label>
+        <input type="range" id="overlay-opacity" min="0" max="1" step="0.01" value="1">
+        <button id="reset-opacity">Reset Opacity</button>
+        <button id="reset-rotation">Reset Rotation</button>
+        <button id="toggle-lock">🔓 Unlock</button>
+      </div>
     </div>
 
-    <div id="flp-dropdown-themes" class="flp-dropdown" style="display: none">
+    <div id="flp-dropdown-themes" class="flp-dropdown">
       <div class="flp-dropdown-content">
         <h4>Theme</h4>
         <button id="theme-toggle">Toggle Light/Dark</button>
@@ -54,10 +74,10 @@
       </div>
     </div>
 
-    <div id="flp-dropdown-resources" class="flp-dropdown" style="display: none">
+    <div id="flp-dropdown-resources" class="flp-dropdown">
       <div class="flp-dropdown-content">
         <h4>Resources</h4>
-        <div id="resource-gallery">Coming soon</div>
+        <div id="resource-gallery"></div>
       </div>
     </div>
   `;
@@ -74,7 +94,36 @@
   document.getElementById("flp-themes-btn").onclick = () => toggleDropdown("flp-dropdown-themes");
   document.getElementById("flp-resources-btn").onclick = () => toggleDropdown("flp-dropdown-resources");
 
-  // ---- Chatbot Window ----
+  document.getElementById("submenu-simkeys-toggle").onclick = () => {
+    const el = document.getElementById("submenu-simkeys-content");
+    el.style.display = el.style.display === "block" ? "none" : "block";
+  };
+
+  document.getElementById("submenu-overlay-toggle").onclick = () => {
+    const el = document.getElementById("submenu-overlay-content");
+    el.style.display = el.style.display === "block" ? "none" : "block";
+  };
+
+  // Simulate Keys
+  document.getElementById("add-custom-button").onclick = () => {
+    const label = document.getElementById("custom-label").value.trim();
+    const key = document.getElementById("custom-action").value.trim();
+    if (!label || !key) return alert("Both fields are required!");
+    const button = document.createElement("button");
+    button.textContent = label;
+    button.onclick = () => {
+      const keyEvent = new KeyboardEvent("keydown", { key, bubbles: true });
+      document.dispatchEvent(keyEvent);
+    };
+    document.getElementById("custom-buttons").appendChild(button);
+    document.getElementById("custom-label").value = "";
+    document.getElementById("custom-action").value = "";
+  };
+
+  // Overlay logic placeholder
+  document.getElementById("upload-image").onclick = () => alert("Image upload logic coming soon...");
+
+  // Chatbot
   const chatbotWindow = document.createElement("div");
   chatbotWindow.id = "flp-chatbot-window";
   chatbotWindow.style.display = "none";
@@ -101,37 +150,25 @@
 
   const getChatbotResponse = (input) => {
     input = input.toLowerCase();
-    let response =
-      "I'm not sure, but you can find help in the Flowlab Forums: https://forum.flowlab.io";
+    let response = "I'm not sure, but check https://forum.flowlab.io";
     if (input.includes("help"))
-      response = "What do you need help with today? Try checking https://flowlab.io/tutorials";
+      response = "What do you need help with today? Try https://flowlab.io/tutorials";
     else if (input.includes("new game"))
       response = "To make a new game, go to your Dashboard and click 'Create New Game'.";
     else if (input.includes("behaviors"))
       response = "Check out Flowlab's Behavior Examples: https://flowlab.io/examples";
-
     appendChatMessage(response, "bot");
-    saveChat();
-  };
-
-  const saveChat = () => {
     localStorage.setItem("flp-chat-history", document.getElementById("chat-output").innerHTML);
-  };
-
-  const restoreChat = () => {
-    const saved = localStorage.getItem("flp-chat-history");
-    if (saved) document.getElementById("chat-output").innerHTML = saved;
-    else appendChatMessage("What do you need help with today?", "bot");
   };
 
   document.getElementById("flp-chatbot-btn").onclick = () => {
     chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
-    restoreChat();
+    const saved = localStorage.getItem("flp-chat-history");
+    document.getElementById("chat-output").innerHTML = saved || "";
+    if (!saved) appendChatMessage("What do you need help with today?", "bot");
   };
 
-  document.getElementById("close-chatbot").onclick = () => {
-    chatbotWindow.style.display = "none";
-  };
+  document.getElementById("close-chatbot").onclick = () => chatbotWindow.style.display = "none";
 
   document.getElementById("send-message").onclick = () => {
     const input = document.getElementById("chat-input").value.trim();
@@ -141,6 +178,7 @@
     getChatbotResponse(input);
   };
 
+  // Theme and font
   document.getElementById("theme-toggle").onclick = () => {
     const mode = document.documentElement.getAttribute("data-theme") || "dark";
     applyTheme(mode === "dark" ? "light" : "dark");
