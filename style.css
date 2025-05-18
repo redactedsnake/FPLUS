@@ -1,0 +1,25 @@
+#flowlab-plus-panel {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 9999;
+  font-family: sans-serif;
+}
+
+#flowlab-plus-toggle {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#flowlab-plus-popup {
+  margin-top: 5px;
+  background: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 220px;
+}
