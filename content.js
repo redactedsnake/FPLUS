@@ -3,7 +3,6 @@
 
   let activeOverlay = null;
   let activeRotation = 0;
-
   const FONT_OPTIONS = {
     Rubik: "Rubik, sans-serif",
     Inter: "Inter, sans-serif",
@@ -146,6 +145,38 @@
       document.addEventListener("mousemove", onMove);
       document.addEventListener("mouseup", onUp);
     });
+
+    const rotateBtn = document.createElement("button");
+    rotateBtn.className = "flp-overlay-btn";
+    rotateBtn.textContent = "⟳";
+    rotateBtn.onclick = () => {
+      activeRotation = (activeRotation + 15) % 360;
+      activeOverlay.style.transform = `rotate(${activeRotation}deg)`;
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "flp-overlay-btn";
+    delBtn.textContent = "✖";
+    delBtn.onclick = () => {
+      activeOverlay.remove();
+      rotateBtn.remove();
+      delBtn.remove();
+    };
+
+    document.body.appendChild(rotateBtn);
+    document.body.appendChild(delBtn);
+
+    const updateBtnPosition = () => {
+      const rect = activeOverlay.getBoundingClientRect();
+      rotateBtn.style.position = delBtn.style.position = "fixed";
+      rotateBtn.style.left = `${rect.left}px`;
+      rotateBtn.style.top = `${rect.top - 30}px`;
+      delBtn.style.left = `${rect.left + 30}px`;
+      delBtn.style.top = `${rect.top - 30}px`;
+    };
+
+    updateBtnPosition();
+    new ResizeObserver(updateBtnPosition).observe(activeOverlay);
   };
 
   const loadGallery = () => {
@@ -210,6 +241,16 @@
       activeRotation = 0;
       activeOverlay.style.transform = "rotate(0deg)";
     }
+  };
+
+  // Simulate Key buttons
+  document.getElementById("add-custom-button").onclick = () => {
+    const label = document.getElementById("custom-label").value.trim();
+    const key = document.getElementById("custom-action").value.trim();
+    if (!label || !key) return alert("Both fields are required!");
+    addCustomButton(label, key);
+    document.getElementById("custom-label").value = "";
+    document.getElementById("custom-action").value = "";
   };
 
   // Dropdowns
