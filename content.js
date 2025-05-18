@@ -1,8 +1,7 @@
-// == Flowlab+ Enhanced content.js with Chatbot and all tools ==
+// == Flowlab+ Full Toolbar with Chatbot and Working Dropdowns ==
 (function () {
   if (document.getElementById("flowlab-plus-toolbar")) return;
 
-  // ---- Utilities ----
   const FONT_OPTIONS = {
     Rubik: "Rubik, sans-serif",
     Inter: "Inter, sans-serif",
@@ -24,7 +23,6 @@
     localStorage.setItem("flp-theme", theme);
   };
 
-  // ---- Toolbar ----
   const toolbar = document.createElement("div");
   toolbar.id = "flowlab-plus-toolbar";
   toolbar.innerHTML = `
@@ -35,8 +33,46 @@
       <button class="flp-menu-btn" id="flp-chatbot-btn">AI Chatbot</button>
       <div id="flp-logo">Flowlab+</div>
     </div>
+
+    <div id="flp-dropdown-tools" class="flp-dropdown" style="display: none">
+      <div class="flp-submenu-item">Simulate Keys (coming soon)</div>
+      <div class="flp-submenu-item">Overlay Image (coming soon)</div>
+    </div>
+
+    <div id="flp-dropdown-themes" class="flp-dropdown" style="display: none">
+      <div class="flp-dropdown-content">
+        <h4>Theme</h4>
+        <button id="theme-toggle">Toggle Light/Dark</button>
+        <h4>Font</h4>
+        <select id="font-select">
+          <option value="Rubik">Rubik</option>
+          <option value="Inter">Inter</option>
+          <option value="Segoe">Segoe</option>
+        </select>
+        <input id="font-url" placeholder="Custom Google Font URL" />
+        <button id="import-font">Import Font</button>
+      </div>
+    </div>
+
+    <div id="flp-dropdown-resources" class="flp-dropdown" style="display: none">
+      <div class="flp-dropdown-content">
+        <h4>Resources</h4>
+        <div id="resource-gallery">Coming soon</div>
+      </div>
+    </div>
   `;
   document.body.appendChild(toolbar);
+
+  const toggleDropdown = (id) => {
+    document.querySelectorAll(".flp-dropdown").forEach(el => {
+      el.style.display = el.id === id && el.style.display !== "block" ? "block" : "none";
+      if (el.id !== id) el.style.display = "none";
+    });
+  };
+
+  document.getElementById("flp-tools-btn").onclick = () => toggleDropdown("flp-dropdown-tools");
+  document.getElementById("flp-themes-btn").onclick = () => toggleDropdown("flp-dropdown-themes");
+  document.getElementById("flp-resources-btn").onclick = () => toggleDropdown("flp-dropdown-resources");
 
   // ---- Chatbot Window ----
   const chatbotWindow = document.createElement("div");
@@ -55,7 +91,6 @@
   `;
   document.body.appendChild(chatbotWindow);
 
-  // ---- Chatbot Functions ----
   const appendChatMessage = (text, sender = "user") => {
     const div = document.createElement("div");
     div.className = `chat-msg ${sender}`;
@@ -89,7 +124,6 @@
     else appendChatMessage("What do you need help with today?", "bot");
   };
 
-  // ---- Chatbot Events ----
   document.getElementById("flp-chatbot-btn").onclick = () => {
     chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
     restoreChat();
@@ -107,7 +141,17 @@
     getChatbotResponse(input);
   };
 
-  // ---- Theme & Font ----
+  document.getElementById("theme-toggle").onclick = () => {
+    const mode = document.documentElement.getAttribute("data-theme") || "dark";
+    applyTheme(mode === "dark" ? "light" : "dark");
+  };
+
+  document.getElementById("font-select").onchange = (e) => loadFont(e.target.value);
+  document.getElementById("import-font").onclick = () => {
+    const url = document.getElementById("font-url").value.trim();
+    if (url) loadFont("CustomFont", url);
+  };
+
   applyTheme(localStorage.getItem("flp-theme") || "dark");
   const font = localStorage.getItem("flp-font");
   loadFont(font || "Rubik", localStorage.getItem("flp-font-url"));
