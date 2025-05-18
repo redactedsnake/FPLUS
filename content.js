@@ -1,5 +1,5 @@
 (function () {
-  console.log("✅ Flowlab+ full UI script running!");
+  console.log("✅ Flowlab+ submenu UI script running!");
 
   if (document.getElementById("flowlab-plus-toolbar")) return;
 
@@ -10,17 +10,10 @@
   };
 
   const loadFont = (fontName, customURL = null) => {
-    if (customURL) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = customURL;
-      document.head.appendChild(link);
-    } else {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap`;
-      document.head.appendChild(link);
-    }
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = customURL || `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap`;
+    document.head.appendChild(link);
 
     document.documentElement.style.setProperty("--flp-font", FONT_OPTIONS[fontName] || fontName);
     localStorage.setItem("flp-font", fontName);
@@ -41,17 +34,20 @@
       <div id="flp-logo">Flowlab+</div>
     </div>
 
-    <div id="flp-dropdown-tools" class="flp-dropdown" style="display:none;">
-      <div class="flp-dropdown-content">
-        <h4>Add Key Simulation</h4>
-        <input id="custom-label" placeholder="Button Label" />
-        <input id="custom-action" placeholder="Key to press (e.g. a)" />
-        <button id="add-custom-button">Add Button</button>
-        <div id="custom-buttons" style="margin-top:10px;"></div>
+    <div id="flp-dropdown-tools" class="flp-dropdown">
+      <div class="flp-submenu-item" id="submenu-simkeys">
+        Simulate Keys ▶
+        <div class="flp-submenu-content" id="submenu-simkeys-content">
+          <h4>Add Key Simulation</h4>
+          <input id="custom-label" placeholder="Button Label" />
+          <input id="custom-action" placeholder="Key to press (e.g. a)" />
+          <button id="add-custom-button">Add Button</button>
+          <div id="custom-buttons" style="margin-top:10px;"></div>
+        </div>
       </div>
     </div>
 
-    <div id="flp-dropdown-themes" class="flp-dropdown" style="display:none;">
+    <div id="flp-dropdown-themes" class="flp-dropdown">
       <div class="flp-dropdown-content">
         <h4>Theme</h4>
         <button id="theme-toggle">Toggle Light/Dark</button>
@@ -81,20 +77,8 @@
 
   const pressKey = (key) => {
     const keyCode = key.toUpperCase().charCodeAt(0);
-    const down = new KeyboardEvent("keydown", {
-      key,
-      code: key.toUpperCase(),
-      keyCode,
-      which: keyCode,
-      bubbles: true,
-    });
-    const up = new KeyboardEvent("keyup", {
-      key,
-      code: key.toUpperCase(),
-      keyCode,
-      which: keyCode,
-      bubbles: true,
-    });
+    const down = new KeyboardEvent("keydown", { key, code: key.toUpperCase(), keyCode, which: keyCode, bubbles: true });
+    const up = new KeyboardEvent("keyup", { key, code: key.toUpperCase(), keyCode, which: keyCode, bubbles: true });
     document.activeElement.dispatchEvent(down);
     setTimeout(() => document.activeElement.dispatchEvent(up), 50);
   };
@@ -141,7 +125,7 @@
     applyTheme(current === "dark" ? "light" : "dark");
   };
 
-  // Load saved buttons
+  // Load saved state
   const saved = localStorage.getItem("flowlabPlusButtons");
   if (saved) {
     try {
@@ -152,7 +136,6 @@
     }
   }
 
-  // Load saved theme + font
   applyTheme(localStorage.getItem("flp-theme") || "dark");
 
   const savedFont = localStorage.getItem("flp-font");
