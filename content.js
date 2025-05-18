@@ -1,32 +1,86 @@
 (function () {
-  console.log("✅ Flowlab+ content script running!");
+  console.log("✅ Flowlab+ full UI script running!");
 
-  if (document.getElementById("flowlab-plus-panel")) return;
+  if (document.getElementById("flowlab-plus-toolbar")) return;
 
-  const panel = document.createElement('div');
-  panel.id = 'flowlab-plus-panel';
-  panel.innerHTML = `
-    <button id="flowlab-plus-toggle">⚙️ Flowlab+</button>
-    <div id="flowlab-plus-popup">
-      <h3>Flowlab+ Tools</h3>
-      <p>Create custom buttons that simulate keypresses:</p>
-      <input id="custom-label" placeholder="Button Label" />
-      <input id="custom-action" placeholder="Key to press (e.g. a)" />
-      <button id="add-custom-button">Add Button</button>
-      <div id="custom-buttons" style="margin-top: 10px;"></div>
+  const FONT_OPTIONS = {
+    Rubik: "Rubik, sans-serif",
+    Inter: "Inter, sans-serif",
+    Segoe: "Segoe UI, sans-serif"
+  };
+
+  const loadFont = (fontName, customURL = null) => {
+    if (customURL) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = customURL;
+      document.head.appendChild(link);
+    } else {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, "+")}&display=swap`;
+      document.head.appendChild(link);
+    }
+
+    document.documentElement.style.setProperty("--flp-font", FONT_OPTIONS[fontName] || fontName);
+    localStorage.setItem("flp-font", fontName);
+    if (customURL) localStorage.setItem("flp-font-url", customURL);
+  };
+
+  const applyTheme = (theme) => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("flp-theme", theme);
+  };
+
+  const toolbar = document.createElement("div");
+  toolbar.id = "flowlab-plus-toolbar";
+  toolbar.innerHTML = `
+    <div class="flp-nav">
+      <button class="flp-menu-btn" id="flp-tools-btn">Tools</button>
+      <button class="flp-menu-btn" id="flp-themes-btn">Themes</button>
+      <div id="flp-logo">Flowlab+</div>
+    </div>
+
+    <div id="flp-dropdown-tools" class="flp-dropdown" style="display:none;">
+      <div class="flp-dropdown-content">
+        <h4>Add Key Simulation</h4>
+        <input id="custom-label" placeholder="Button Label" />
+        <input id="custom-action" placeholder="Key to press (e.g. a)" />
+        <button id="add-custom-button">Add Button</button>
+        <div id="custom-buttons" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <div id="flp-dropdown-themes" class="flp-dropdown" style="display:none;">
+      <div class="flp-dropdown-content">
+        <h4>Theme</h4>
+        <button id="theme-toggle">Toggle Light/Dark</button>
+
+        <h4 style="margin-top:10px;">Font</h4>
+        <select id="font-select">
+          <option value="Rubik">Rubik</option>
+          <option value="Inter">Inter</option>
+          <option value="Segoe">Segoe</option>
+        </select>
+        <input id="font-url" placeholder="Custom Google Font URL" />
+        <button id="import-font">Import Font</button>
+      </div>
     </div>
   `;
-  document.body.appendChild(panel);
+  document.body.appendChild(toolbar);
 
-  const toggle = document.getElementById('flowlab-plus-toggle');
-  const popup = document.getElementById('flowlab-plus-popup');
-  toggle.onclick = () => {
-    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+  const toggleDropdown = (idToToggle) => {
+    document.querySelectorAll(".flp-dropdown").forEach((el) => {
+      el.style.display = el.id === idToToggle && el.style.display === "none" ? "block" : "none";
+      if (el.id !== idToToggle) el.style.display = "none";
+    });
   };
+
+  document.getElementById("flp-tools-btn").onclick = () => toggleDropdown("flp-dropdown-tools");
+  document.getElementById("flp-themes-btn").onclick = () => toggleDropdown("flp-dropdown-themes");
 
   const pressKey = (key) => {
     const keyCode = key.toUpperCase().charCodeAt(0);
-
     const down = new KeyboardEvent("keydown", {
       key,
       code: key.toUpperCase(),
@@ -34,7 +88,6 @@
       which: keyCode,
       bubbles: true,
     });
-
     const up = new KeyboardEvent("keyup", {
       key,
       code: key.toUpperCase(),
@@ -42,14 +95,8 @@
       which: keyCode,
       bubbles: true,
     });
-
     document.activeElement.dispatchEvent(down);
-    console.log(`🔘 keydown: ${key}`);
-
-    setTimeout(() => {
-      document.activeElement.dispatchEvent(up);
-      console.log(`🔘 keyup: ${key}`);
-    }, 50);
+    setTimeout(() => document.activeElement.dispatchEvent(up), 50);
   };
 
   const saveButtons = () => {
@@ -64,12 +111,8 @@
     const newBtn = document.createElement("button");
     newBtn.textContent = label;
     newBtn.dataset.key = key;
-    newBtn.style.marginTop = "5px";
-    newBtn.style.display = "block";
-    newBtn.style.padding = "6px 10px";
-    newBtn.style.marginBottom = "5px";
+    newBtn.className = "flp-action-button";
     newBtn.onclick = () => pressKey(key);
-
     document.getElementById("custom-buttons").appendChild(newBtn);
     if (save) saveButtons();
   };
@@ -77,15 +120,28 @@
   document.getElementById("add-custom-button").onclick = () => {
     const label = document.getElementById("custom-label").value.trim();
     const key = document.getElementById("custom-action").value.trim();
-
     if (!label || !key) return alert("Both fields are required!");
-
     addCustomButton(label, key);
     document.getElementById("custom-label").value = "";
     document.getElementById("custom-action").value = "";
   };
 
-  // 🔁 Load saved buttons on startup
+  document.getElementById("font-select").onchange = (e) => {
+    loadFont(e.target.value);
+  };
+
+  document.getElementById("import-font").onclick = () => {
+    const url = document.getElementById("font-url").value.trim();
+    if (!url) return alert("Enter a valid Google Fonts URL.");
+    loadFont("CustomFont", url);
+  };
+
+  document.getElementById("theme-toggle").onclick = () => {
+    const current = document.documentElement.getAttribute("data-theme") || "dark";
+    applyTheme(current === "dark" ? "light" : "dark");
+  };
+
+  // Load saved buttons
   const saved = localStorage.getItem("flowlabPlusButtons");
   if (saved) {
     try {
@@ -94,5 +150,18 @@
     } catch (e) {
       console.warn("⚠️ Failed to parse saved buttons:", e);
     }
+  }
+
+  // Load saved theme + font
+  applyTheme(localStorage.getItem("flp-theme") || "dark");
+
+  const savedFont = localStorage.getItem("flp-font");
+  const savedFontUrl = localStorage.getItem("flp-font-url");
+  if (savedFont) {
+    loadFont(savedFont, savedFontUrl || null);
+    const select = document.getElementById("font-select");
+    if (select && FONT_OPTIONS[savedFont]) select.value = savedFont;
+  } else {
+    loadFont("Rubik");
   }
 })();
