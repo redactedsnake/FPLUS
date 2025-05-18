@@ -194,6 +194,26 @@
     });
   };
 
+  // Simulate Key buttons
+  const addCustomButton = (label, key) => {
+    const button = document.createElement("button");
+    button.textContent = label;
+    button.onclick = () => {
+      const event = new KeyboardEvent("keydown", { key: key });
+      window.dispatchEvent(event);
+    };
+    document.getElementById("custom-buttons").appendChild(button);
+  };
+
+  document.getElementById("add-custom-button").onclick = () => {
+    const label = document.getElementById("custom-label").value.trim();
+    const key = document.getElementById("custom-action").value.trim();
+    if (!label || !key) return alert("Both fields are required!");
+    addCustomButton(label, key);
+    document.getElementById("custom-label").value = "";
+    document.getElementById("custom-action").value = "";
+  };
+
   // Overlay controls
   document.getElementById("upload-image").onclick = () => {
     const input = document.createElement("input");
@@ -215,43 +235,10 @@
     input.click();
   };
 
-  document.getElementById("overlay-opacity").oninput = (e) => {
-    if (activeOverlay) activeOverlay.style.opacity = e.target.value;
-  };
-
-  document.getElementById("overlay-size").oninput = (e) => {
-    if (activeOverlay) activeOverlay.style.width = `${e.target.value}px`;
-  };
-
-  document.getElementById("toggle-lock").onclick = () => {
-    if (!activeOverlay) return;
-    activeOverlay.classList.toggle("locked");
-    document.getElementById("toggle-lock").textContent =
-      activeOverlay.classList.contains("locked") ? "🔒 Locked" : "🔓 Unlock";
-  };
-
-  // Reset buttons
-  document.getElementById("reset-size").onclick = () => {
-    if (activeOverlay) activeOverlay.style.width = "200px";
-  };
-  document.getElementById("reset-opacity").onclick = () => {
-    if (activeOverlay) activeOverlay.style.opacity = "1";
-  };
-  document.getElementById("reset-rotation").onclick = () => {
-    if (activeOverlay) {
-      activeRotation = 0;
-      activeOverlay.style.transform = "rotate(0deg)";
-    }
-  };
-
-  // Simulate Key buttons
-  document.getElementById("add-custom-button").onclick = () => {
-    const label = document.getElementById("custom-label").value.trim();
-    const key = document.getElementById("custom-action").value.trim();
-    if (!label || !key) return alert("Both fields are required!");
-    addCustomButton(label, key);
-    document.getElementById("custom-label").value = "";
-    document.getElementById("custom-action").value = "";
+  // Opening simulate keys menu
+  document.getElementById("submenu-simkeys-toggle").onclick = () => {
+    const el = document.getElementById("submenu-simkeys-content");
+    el.style.display = el.style.display === "block" ? "none" : "block";
   };
 
   // Dropdowns
